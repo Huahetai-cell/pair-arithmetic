@@ -25,8 +25,8 @@
 
 ```mermaid
 classDiagram
-  Application --> ExerciseGenerator
-  Application --> Grader
+  cli.main --> ExerciseGenerator
+  cli.main --> Grader
   ExerciseGenerator --> Expression
   Grader --> ExpressionParser
   Expression <|.. NumberExpression

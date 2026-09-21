@@ -11,7 +11,6 @@
 在项目根目录执行：
 
 ```powershell
-$env:PYTHONPATH = "$PWD\src"
 python Myapp.py -n 10 -r 10
 python Myapp.py -e Exercises.txt -a Answers.txt
 python Myapp.py --help
@@ -77,4 +76,3 @@ dist\Myapp.exe -n 10 -r 10
 - `tools`：性能报告和 EXE 打包脚本；
 - `docs/blog-draft.md`：课程博客初稿；
 - `docs/performance`：真实测试数据、图表和分析文件。
-
