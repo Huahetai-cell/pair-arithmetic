@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pair-arithmetic"
+version = "1.0.0"
+description = "Primary-school arithmetic exercise generator and grader"
+requires-python = ">=3.10"
+authors = [
+  {name = "翁佳华", email = "huahetai0430@gmail.com"},
+  {name = "廖颖欣"}
+]
+
+[project.scripts]
+myapp = "arithmetic.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
