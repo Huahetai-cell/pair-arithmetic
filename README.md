@@ -84,5 +84,8 @@ dist\Myapp.exe -n 10 -r 10
 - `src/arithmetic`：表达式树、生成器、解析器、批改器和 CLI；
 - `tests`：19个自动测试；
 - `tools`：性能报告和 EXE 打包脚本；
-- `docs/blog-draft.md`：课程博客初稿；
+- `samples`：可复现的判题输入样例；
+- `docs/blog-final.md`：可直接发布的完整课程博客；
+- `docs/local-test-guide.md`：按博客截图编号编排的本机测试指南；
+- `docs/blog-draft.md`：早期博客提纲；
 - `docs/performance`：真实测试数据、图表和分析文件。
