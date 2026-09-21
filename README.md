@@ -40,7 +40,17 @@ $env:PYTHONPATH = "$PWD\src"
 python -m unittest discover -s tests -v
 ```
 
-测试覆盖精确分数、带分数、解析与括号、题面判重示例、生成约束、命令行错误、文件格式、答案批改和一次生成10000道题。
+当前共19项自动测试，覆盖精确分数、带分数、解析与括号、题面判重示例、生成约束、命令行错误、文件格式、UTF-8 BOM、覆盖写、答案批改和一次生成10000道题。
+
+### 输入输出验收
+
+构建 EXE 后执行真实进程验收：
+
+```powershell
+python tools/io_validation.py
+```
+
+脚本自动检查帮助信息、非法参数、模式冲突、缺失文件、最小范围、100题、10000题、UTF-8/带分数、批改矩阵和覆盖写，并重新解析全部生成题验证答案与唯一性。当前13个场景全部通过，详见[输入输出验收报告](docs/io-validation.md)。
 
 ## 自动性能报告
 
@@ -72,7 +82,7 @@ dist\Myapp.exe -n 10 -r 10
 ## 目录结构
 
 - `src/arithmetic`：表达式树、生成器、解析器、批改器和 CLI；
-- `tests`：13个自动测试；
+- `tests`：19个自动测试；
 - `tools`：性能报告和 EXE 打包脚本；
 - `docs/blog-draft.md`：课程博客初稿；
 - `docs/performance`：真实测试数据、图表和分析文件。

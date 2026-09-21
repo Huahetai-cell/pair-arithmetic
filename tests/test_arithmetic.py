@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import io
+import re
 import tempfile
 import unittest
 from fractions import Fraction
@@ -111,11 +112,66 @@ class GraderAndCliTests(unittest.TestCase):
             self.assertEqual(20, len((root / "Exercises.txt").read_text(encoding="utf-8").splitlines()))
             self.assertEqual(20, len((root / "Answers.txt").read_text(encoding="utf-8").splitlines()))
 
+    def test_generated_file_format_and_answers_are_exact(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertEqual(0, main(["-n", "100", "-r", "10"], root))
+            exercises = (root / "Exercises.txt").read_text(encoding="utf-8").splitlines()
+            answers = (root / "Answers.txt").read_text(encoding="utf-8").splitlines()
+            parser = ExpressionParser()
+            for number, (exercise_line, answer_line) in enumerate(zip(exercises, answers, strict=True), 1):
+                exercise_match = re.fullmatch(r"(\d+)\. (.+) =", exercise_line)
+                answer_match = re.fullmatch(r"(\d+)\) (\d+(?:’\d+/\d+|/\d+)?)", answer_line)
+                self.assertIsNotNone(exercise_match)
+                self.assertIsNotNone(answer_match)
+                self.assertEqual(number, int(exercise_match.group(1)))
+                self.assertEqual(number, int(answer_match.group(1)))
+                self.assertEqual(parser.parse(exercise_match.group(2)).value, parse_fraction(answer_match.group(2)))
+
+    def test_generation_overwrites_instead_of_appending(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            self.assertEqual(0, main(["-n", "20", "-r", "10"], root))
+            self.assertEqual(0, main(["-n", "3", "-r", "10"], root))
+            self.assertEqual(3, len((root / "Exercises.txt").read_text(encoding="utf-8").splitlines()))
+            self.assertEqual(3, len((root / "Answers.txt").read_text(encoding="utf-8").splitlines()))
+
+    def test_minimum_range_is_supported_for_small_request(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            self.assertEqual(0, main(["-n", "1", "-r", "1"], Path(directory)))
+
     def test_missing_range_prints_help_and_fails(self) -> None:
         with self.assertRaises(SystemExit) as raised, patch("sys.stderr", new_callable=io.StringIO) as error:
             main(["-n", "10"])
         self.assertEqual(2, raised.exception.code)
         self.assertIn("-n 和 -r", error.getvalue())
+
+    def test_invalid_and_conflicting_arguments_fail(self) -> None:
+        invalid_cases = (
+            [], ["-n", "0", "-r", "10"], ["-n", "abc", "-r", "10"],
+            ["-n", "10", "-r", "-1"], ["--unknown", "1"],
+            ["-n", "1", "-r", "10", "-e", "e.txt", "-a", "a.txt"],
+        )
+        for arguments in invalid_cases:
+            with self.subTest(arguments=arguments), self.assertRaises(SystemExit) as raised, \
+                    patch("sys.stderr", new_callable=io.StringIO):
+                main(arguments)
+            self.assertEqual(2, raised.exception.code)
+
+    def test_missing_input_file_returns_failure_without_grade_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            with patch("sys.stderr", new_callable=io.StringIO) as error:
+                self.assertEqual(2, main(["-e", str(root / "missing-e.txt"), "-a", str(root / "missing-a.txt")], root))
+            self.assertIn("错误", error.getvalue())
+            self.assertFalse((root / "Grade.txt").exists())
+
+    def test_utf8_bom_answer_file_is_supported(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root / "e.txt").write_text("1. 1/6 + 1/8 =\n", encoding="utf-8-sig")
+            (root / "a.txt").write_text("1) 7/24\n", encoding="utf-8-sig")
+            self.assertEqual((1,), Grader().grade(root / "e.txt", root / "a.txt").correct)
 
     def test_grading_mode_writes_grade_file(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
