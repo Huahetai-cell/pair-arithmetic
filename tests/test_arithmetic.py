@@ -62,6 +62,9 @@ class GeneratorTests(unittest.TestCase):
                 self.assertIn(expression.operator_count, (1, 2, 3))
                 self.assertNotIn(expression.canonical_key, keys)
                 keys.add(expression.canonical_key)
+                reparsed = ExpressionParser().parse(expression.render())
+                self.assertEqual(expression.value, reparsed.value)
+                self.assertEqual(expression.canonical_key, reparsed.canonical_key)
                 self._verify_tree(expression)
 
     def test_ten_thousand_unique_exercises(self) -> None:
@@ -76,6 +79,8 @@ class GeneratorTests(unittest.TestCase):
     def _verify_tree(self, expression) -> None:
         if not isinstance(expression, Binary):
             self.assertGreaterEqual(expression.value, 0)
+            self.assertLess(expression.value, 10)
+            self.assertLess(expression.value.denominator, 10)
             return
         self._verify_tree(expression.left)
         self._verify_tree(expression.right)
